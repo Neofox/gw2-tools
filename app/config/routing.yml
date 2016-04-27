@@ -1,0 +1,6 @@
+_welcome:
+    path:      /
+    defaults:  { _controller: AppBundle:Default:index }
+
+app:
+    resource: '@AppBundle/Resources/config/routing.yml'

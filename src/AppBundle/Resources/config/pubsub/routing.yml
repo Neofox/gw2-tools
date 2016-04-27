@@ -1,0 +1,4 @@
+wvw_topic:
+    channel: wvw/channel
+    handler:
+        callback: 'wvw.topic' #related to the getName() of your topic

@@ -1,0 +1,19 @@
+default:
+    path:     /
+    defaults: { _controller: AppBundle:Default:index }
+
+homepage:
+    path:     /homepage
+    defaults: { _controller: AppBundle:Default:homepage }
+
+pve:
+    path:     /pve
+    defaults: { _controller: AppBundle:PvE:index }
+
+pvp:
+    path:     /pvp
+    defaults: { _controller: AppBundle:PvP:index }
+
+wvw:
+    path:     /wvw
+    defaults: { _controller: AppBundle:WvW:index }

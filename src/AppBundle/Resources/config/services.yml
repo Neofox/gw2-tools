@@ -1,0 +1,30 @@
+parameters:
+
+services:
+
+# SERVICES
+    service.api_key:
+        class: AppBundle\Services\ApiKeyService
+        arguments: ["@service_container"]
+
+    service.wvw:
+        class: AppBundle\Services\WvWService
+        arguments:
+            - '@service.world'
+            - '@service.cache'
+
+    service.world:
+        class: AppBundle\Services\WorldService
+        arguments:
+            - '@service.cache'
+
+    service.character:
+        class: AppBundle\Services\CharacterService
+
+# TOPIC
+    topic.wvw:
+          class: AppBundle\Services\Topic\WvWTopic
+          arguments:
+              - '@service.wvw'
+          tags:
+                     - { name: gos_web_socket.topic }

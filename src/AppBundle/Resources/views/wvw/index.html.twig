@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h3>INDEX : WvW</h3>
+
+    {{ dump(matcheInfos) }}
+    {{ ws_client() }}
+{% endblock %}
+
+{% block javascripts  %}
+    <script type="application/javascript">
+        var _WS_URI = "ws://{{ gos_web_socket_server_host }}:{{ gos_web_socket_server_port }}";
+        var webSocket = WS.connect(_WS_URI);
+
+        webSocket.on("socket/connect", function(session){
+            //session is an Autobahn JS WAMP session.
+            console.log("Successfully Connected!");
+
+            session.subscribe("wvw/channel", function(uri, payload){
+                console.log("Received message", payload);
+            });
+        });
+
+        webSocket.on("socket/disconnect", function(error){
+            //error provides us with some insight into the disconnection: error.reason and error.code
+
+            console.log("Disconnected for " + error.reason + " with code " + error.code);
+        });
+    </script>
+{% endblock %}
