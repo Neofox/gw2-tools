@@ -16,7 +16,8 @@ class WvWController extends Controller
 {
     public function indexAction(Request $request)
     {
-        $matcheInfos = $this->getWvWService()->getMatcheInfos(2104, true);
+        $matcheInfos ='';
+        //$matcheInfos = $this->getWvWService()->getMatcheInfos(2104, true);
 
         // replace this example code with whatever you need
         return $this->render('@App/wvw/index.html.twig', [

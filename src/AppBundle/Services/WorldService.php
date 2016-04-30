@@ -9,52 +9,25 @@
 namespace AppBundle\Services;
 
 
-use Doctrine\Common\Cache\ApcuCache;
-use Doctrine\Common\Cache\ArrayCache;
-use GuildWars2\Endpoints;
-use GuildWars2\Wrapper;
+use AppBundle\Services\Gateway\WorldGateway;
 
 class WorldService
 {
     /**
-     * @var ApcuCache
+     * @var WorldGateway
      */
-    private $cache;
+    private $worldGateway;
 
     /**
      * WorldService constructor.
      *
-     * @param ArrayCache $cache
-     */
-    public function __construct(ArrayCache $cache)
-    {
-        $this->cache = $cache;
-    }
-
-
-    /**
-     * @param $worldId
+     * @param WorldGateway $worldGateway
      *
-     * @return mixed
+     * @internal param CacheService $cache
      */
-    public function getWorldsInfos($worldId = null)
+    public function __construct(WorldGateway $worldGateway)
     {
-        $cacheKey = 'world_id_'.$worldId;
-
-        if($this->cache->contains($cacheKey)){
-            $response = $this->cache->fetch($cacheKey);
-        }else{
-            $wrapper = new Wrapper();
-            $wrapper->setEndpoint(Endpoints::WORLDS);
-            $response = $wrapper->callApi($worldId);
-            $cached = $this->cache->save($cacheKey, $response);
-
-            if(!$cached) {r('file not cached '.$cacheKey, $response);}
-        }
-
-
-
-        return $response;
+        $this->worldGateway = $worldGateway;
     }
 
 }

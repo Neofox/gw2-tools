@@ -9,10 +9,9 @@
 namespace AppBundle\Services;
 
 
-use Doctrine\Common\Cache\ApcuCache;
+use AppBundle\Services\Gateway\WvWGateway;
 use Doctrine\Common\Cache\ArrayCache;
-use GuildWars2\Endpoints;
-use GuildWars2\Wrapper;
+use GW2Treasures\GW2Api\GW2Api;
 
 class WvWService
 {
@@ -24,42 +23,44 @@ class WvWService
      * @var WorldService
      */
     private $worldService;
-    /**
-     * @var ApcuCache
-     */
+
     private $cache;
+    /**
+     * @var WvWGateway
+     */
+    private $wvwGateway;
 
     /**
      * WvWService constructor.
      *
-     * @param WorldService $worldService
+     * @param WorldService            $worldService
      *
-     * @param ArrayCache    $cache
+     * @param WvWGateway              $wvwGateway
+     * @param CacheService|ArrayCache $cache
      *
      * @internal param array $mapObjectives
      */
-    public function __construct(WorldService $worldService, ArrayCache $cache)
+    public function __construct(WorldService $worldService, WvWGateway $wvwGateway, CacheService $cache)
     {
         $this->worldService = $worldService;
         $this->cache = $cache;
+        $this->wvwGateway = $wvwGateway;
     }
 
-    public function stringifyTakenObjectives($matcheId)
+    public function stringifyTakenObjectives($matchId)
     {
-        $matcheParticipants = $this->getMatcheParticipants($matcheId);
-        $mapObjectives = $this->getObjectives($matcheId);
+        $matchParticipants = $this->wvwGateway->getMatchParticipants($matchId);
+        $mapObjectives = $this->getObjectives($matchId);
         $result = [];
 
         foreach ($mapObjectives as $map => $objectives) {
             foreach ($objectives as $key => $objective) {
-
                 if ($objective->owner != $this->mapObjectives[$map][$key]->owner) {
-                    $objectiveInfos = $this->getObjectiveInfos($objective->id);
-
-                    $exOwner = $matcheParticipants[strtolower($this->mapObjectives[$map][$key]->owner)]->name;
-                    $newOwner = $matcheParticipants[strtolower($objective->owner)]->name;
+                    $objectiveInfo = $this->wvwGateway->getObjectiveInfo($objective->id);
+                    $exOwner = $matchParticipants[strtolower($this->mapObjectives[$map][$key]->owner)]->name;
+                    $newOwner = $matchParticipants[strtolower($objective->owner)]->name;
                     
-                    $result[] = ['msg' => "$objectiveInfos->name ( owned by $exOwner ) has been taken by $newOwner "];
+                    $result[] = ['msg' => "$objectiveInfo->name ( owned by $exOwner ) has been taken by $newOwner "];
                 }
             }
         }
@@ -69,43 +70,9 @@ class WvWService
         return $result;
     }
 
-    public function getMatcheParticipants($matcheId)
+    public function getObjectives($matchId)
     {
-        $matcheInfos = $this->getMatcheInfos($matcheId);
-
-        return [
-            'red'   => $this->worldService->getWorldsInfos($matcheInfos->worlds->red),
-            'blue'  => $this->worldService->getWorldsInfos($matcheInfos->worlds->blue),
-            'green' => $this->worldService->getWorldsInfos($matcheInfos->worlds->green),
-        ];
-    }
-
-    /**
-     * @param      $id
-     * @param bool $isWorldId
-     *
-     * @return mixed
-     */
-    public function getMatcheInfos($id, $isWorldId = false)
-    {
-        $wrapper = (new Wrapper())->setDebug(false);
-        $wrapper->setEndpoint(Endpoints::WVW_MATCHES);
-
-        if ($isWorldId) {
-            $response = $wrapper->callApi('', ['world' => $id]);
-        } else {
-            $response = $wrapper->callApi($id);
-        }
-
-        return $response;
-    }
-
-    public function getObjectives($matcheId)
-    {
-        $wrapper = new Wrapper();
-        $wrapper->setEndpoint(Endpoints::WVW_MATCHES);
-
-        $response = $wrapper->callApi($matcheId);
+        $response = (new GW2Api())->wvw()->matches()->get($matchId);
         $maps = $response->maps;
 
         $objectives = [];
@@ -114,23 +81,6 @@ class WvWService
         }
 
         return $objectives;
-    }
-
-    public function getObjectiveInfos($objectiveId)
-    {
-        $cacheKey = 'objective_id_'.$objectiveId;
-
-        if($this->cache->contains($cacheKey)){
-            $response = $this->cache->fetch($cacheKey);
-        }else {
-            $wrapper = new Wrapper();
-            $wrapper->setEndpoint(Endpoints::WVW_OBJECTIVES);
-            $response = $wrapper->callApi($objectiveId);
-            $cached = $this->cache->save($cacheKey, $response);
-
-            if(!$cached) {r('file not cached '.$cacheKey, $response);}
-        }
-        return $response;
     }
 
     /**
@@ -145,8 +95,5 @@ class WvWService
         return $this;
     }
 
-    public function getWorldByColor($matcheId, $color)
-    {
-        $this->getMatcheInfos($matcheId);
-    }
+
 }

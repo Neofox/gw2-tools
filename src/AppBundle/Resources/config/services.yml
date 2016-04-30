@@ -11,12 +11,12 @@ services:
         class: AppBundle\Services\WvWService
         arguments:
             - '@service.world'
+            - '@gateway.wvw'
             - '@service.cache'
 
     service.world:
         class: AppBundle\Services\WorldService
-        arguments:
-            - '@service.cache'
+        arguments: ['@gateway.world']
 
     service.character:
         class: AppBundle\Services\CharacterService
@@ -28,3 +28,12 @@ services:
               - '@service.wvw'
           tags:
                      - { name: gos_web_socket.topic }
+
+# GATEWAY
+    gateway.wvw:
+        class: AppBundle\Services\Gateway\WvWGateway
+        arguments: ['@service.cache', '@gateway.world']
+
+    gateway.world:
+        class: AppBundle\Services\Gateway\WorldGateway
+        arguments: ['@service.cache']

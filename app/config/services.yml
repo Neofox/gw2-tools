@@ -4,5 +4,9 @@ parameters:
 #    parameter_name: value
 
 services:
-    service.cache:
+    cache.array:
         class: Doctrine\Common\Cache\ArrayCache
+
+    service.cache:
+        class: AppBundle\Services\CacheService
+        arguments: ["@cache.array"]

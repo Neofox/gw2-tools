@@ -107,10 +107,10 @@ class WvWTopic implements TopicInterface, TopicPeriodicTimerInterface
     {
         try {
 
-            $this->wvwService->setMapObjectives($this->wvwService->getObjectives('2-6'));
+            $this->wvwService->setMapObjectives($this->wvwService->getObjectives('2-4'));
             //add
-            $this->periodicTimer->addPeriodicTimer($this, 'wvwConsole', 10, function () use ($topic) {
-                $takenObjectives = $this->wvwService->stringifyTakenObjectives('2-6');
+            $this->periodicTimer->addPeriodicTimer($this, 'wvwConsole', 2, function () use ($topic) {
+                $takenObjectives = $this->wvwService->stringifyTakenObjectives('2-4');
 
                 if (!empty($takenObjectives)) {
                     foreach ($takenObjectives as $takenObjective) {
